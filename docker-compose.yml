@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  db:
+    build:
+      context: ./backend/db
+      dockerfile: Dockerfile
+    container_name: esthe_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-esthe_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-esthe_password}
+      POSTGRES_DB: ${POSTGRES_DB:-esthe_map}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-esthe_user} -d ${POSTGRES_DB:-esthe_map}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: esthe_backend
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-esthe_user}:${POSTGRES_PASSWORD:-esthe_password}@db:5432/${POSTGRES_DB:-esthe_map}
+      - GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - APIFY_API_TOKEN=${APIFY_API_TOKEN}
+      - ENV=${ENV:-development}
+      - DEBUG=${DEBUG:-true}
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: esthe_frontend
+    environment:
+      - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+      - NEXT_PUBLIC_GOOGLE_MAP_ID=${GOOGLE_MAP_ID}
+      - BACKEND_API_URL=http://backend:8000
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  adminer:
+    image: adminer
+    container_name: esthe_adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

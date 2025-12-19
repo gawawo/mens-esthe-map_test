@@ -1,0 +1,495 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700&family=Orbitron:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   CSS カスタムプロパティ (カジノテーマ)
+   ======================================== */
+:root {
+  /* ベースカラー */
+  --casino-black: #0a0a0f;
+  --casino-velvet: #12121a;
+  --casino-felt: #1a1f2e;
+  --casino-midnight: #1e1b2e;
+
+  /* リスクカラー */
+  --color-safe: #00ff88;
+  --color-safe-glow: rgba(0, 255, 136, 0.5);
+  --color-gamble: #ffd700;
+  --color-gamble-glow: rgba(255, 215, 0, 0.5);
+  --color-mine: #ff3366;
+  --color-mine-glow: rgba(255, 51, 102, 0.5);
+  --color-fake: #8b5cf6;
+  --color-fake-glow: rgba(139, 92, 246, 0.5);
+
+  /* アクセント */
+  --color-gold: #ffd700;
+  --color-gold-light: #ffe44d;
+  --color-neon-cyan: #00f5ff;
+  --color-neon-pink: #ff1493;
+
+  /* テキスト */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.5);
+
+  /* レスポンシブ: Safe Area Insets */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+/* ========================================
+   ベースレイヤー
+   ======================================== */
+@layer base {
+  html {
+    @apply antialiased;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-casino-black text-white font-body;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at top, rgba(30, 27, 46, 0.5) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom, rgba(26, 31, 46, 0.3) 0%, transparent 50%);
+  }
+
+  /* フォント設定 */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-wide;
+  }
+
+  /* 選択時のスタイル */
+  ::selection {
+    @apply bg-gold/30 text-white;
+  }
+}
+
+/* ========================================
+   カスタムスクロールバー (ゴールドテーマ)
+   ======================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--casino-velvet);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--color-gold) 0%, #cc9900 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ffe44d 0%, var(--color-gold) 100%);
+  box-shadow: 0 0 8px var(--color-gamble-glow);
+}
+
+/* Firefox スクロールバー */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gold) var(--casino-velvet);
+}
+
+/* ========================================
+   コンポーネントレイヤー
+   ======================================== */
+@layer components {
+  /* マップコンテナ */
+  .map-container {
+    @apply w-full h-full;
+    /* マップの彩度を少し下げてダークテーマに馴染ませる */
+    filter: saturate(0.85) brightness(0.9);
+  }
+
+  /* ========================================
+     リスクバッジ (カジノチップスタイル)
+     ======================================== */
+  .risk-chip {
+    @apply relative inline-flex items-center justify-center;
+    @apply w-10 h-10 rounded-full;
+    @apply font-score font-bold text-sm;
+    @apply border-2 border-dashed;
+    @apply transition-all duration-300;
+    background: var(--casino-black);
+  }
+
+  .risk-chip::before {
+    content: '';
+    @apply absolute inset-1 rounded-full;
+    @apply border border-current opacity-30;
+  }
+
+  .risk-chip-safe {
+    @apply border-safe text-safe;
+    box-shadow: 0 0 10px var(--color-safe-glow), inset 0 0 8px rgba(0, 255, 136, 0.1);
+  }
+
+  .risk-chip-gamble {
+    @apply border-gamble text-gamble;
+    box-shadow: 0 0 10px var(--color-gamble-glow), inset 0 0 8px rgba(255, 215, 0, 0.1);
+  }
+
+  .risk-chip-mine {
+    @apply border-mine text-mine;
+    box-shadow: 0 0 10px var(--color-mine-glow), inset 0 0 8px rgba(255, 51, 102, 0.1);
+  }
+
+  .risk-chip-fake {
+    @apply border-fake text-fake opacity-70;
+    box-shadow: 0 0 10px var(--color-fake-glow), inset 0 0 8px rgba(139, 92, 246, 0.1);
+  }
+
+  /* ========================================
+     カジノカード
+     ======================================== */
+  .casino-card {
+    @apply relative overflow-hidden;
+    @apply bg-casino-velvet rounded-card;
+    @apply border border-gold/20;
+    @apply transition-all duration-300 ease-casino-snap;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 215, 0, 0.3);
+  }
+
+  .casino-card:hover {
+    @apply border-gold/40;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.2);
+    transform: translateY(-4px);
+  }
+
+  .casino-card::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, transparent 40%, rgba(255, 215, 0, 0.05) 100%);
+    pointer-events: none;
+  }
+
+  .casino-card:hover::before {
+    @apply opacity-100;
+  }
+
+  /* ========================================
+     ネオンテキスト
+     ======================================== */
+  .neon-text-safe {
+    color: var(--color-safe);
+    text-shadow:
+      0 0 5px var(--color-safe),
+      0 0 10px var(--color-safe-glow),
+      0 0 20px var(--color-safe-glow);
+  }
+
+  .neon-text-gamble {
+    color: var(--color-gamble);
+    text-shadow:
+      0 0 5px var(--color-gamble),
+      0 0 10px var(--color-gamble-glow),
+      0 0 20px var(--color-gamble-glow);
+  }
+
+  .neon-text-mine {
+    color: var(--color-mine);
+    text-shadow:
+      0 0 5px var(--color-mine),
+      0 0 10px var(--color-mine-glow),
+      0 0 20px var(--color-mine-glow);
+  }
+
+  .neon-text-fake {
+    color: var(--color-fake);
+    text-shadow:
+      0 0 5px var(--color-fake),
+      0 0 10px var(--color-fake-glow),
+      0 0 20px var(--color-fake-glow);
+  }
+
+  .neon-text-gold {
+    color: var(--color-gold);
+    text-shadow:
+      0 0 5px var(--color-gold),
+      0 0 15px var(--color-gamble-glow),
+      0 0 30px var(--color-gamble-glow);
+  }
+
+  /* ========================================
+     ネオンボーダー
+     ======================================== */
+  .neon-border-safe {
+    @apply border-safe;
+    box-shadow: 0 0 10px var(--color-safe-glow), inset 0 0 10px rgba(0, 255, 136, 0.05);
+  }
+
+  .neon-border-gamble {
+    @apply border-gamble;
+    box-shadow: 0 0 10px var(--color-gamble-glow), inset 0 0 10px rgba(255, 215, 0, 0.05);
+  }
+
+  .neon-border-mine {
+    @apply border-mine;
+    box-shadow: 0 0 10px var(--color-mine-glow), inset 0 0 10px rgba(255, 51, 102, 0.05);
+  }
+
+  .neon-border-fake {
+    @apply border-fake;
+    box-shadow: 0 0 10px var(--color-fake-glow), inset 0 0 10px rgba(139, 92, 246, 0.05);
+  }
+
+  /* ========================================
+     ボタンスタイル
+     ======================================== */
+  .btn-casino {
+    @apply relative overflow-hidden;
+    @apply px-6 py-3 rounded-lg;
+    @apply font-display tracking-wider text-sm uppercase;
+    @apply bg-casino-felt border border-gold/30;
+    @apply text-gold transition-all duration-300;
+  }
+
+  .btn-casino:hover {
+    @apply bg-casino-midnight border-gold/60;
+    box-shadow: 0 0 20px var(--color-gamble-glow);
+  }
+
+  .btn-casino:active {
+    transform: scale(0.98);
+  }
+
+  .btn-casino-primary {
+    @apply bg-gradient-to-r from-gold-dark via-gold to-gold-light;
+    @apply text-casino-black border-none;
+    @apply font-bold;
+  }
+
+  .btn-casino-primary:hover {
+    @apply from-gold via-gold-light to-gold;
+    box-shadow: 0 0 25px var(--color-gamble-glow);
+  }
+
+  /* ========================================
+     パネル/サイドバー
+     ======================================== */
+  .casino-panel {
+    @apply bg-casino-velvet/95 backdrop-blur-sm;
+    @apply border-r border-gold/10;
+  }
+
+  .casino-panel-header {
+    @apply px-4 py-3;
+    @apply bg-gradient-to-r from-casino-midnight to-casino-velvet;
+    @apply border-b border-gold/20;
+  }
+
+  /* ========================================
+     インプットスタイル
+     ======================================== */
+  .input-casino {
+    @apply w-full px-4 py-3 rounded-lg;
+    @apply bg-casino-black/50 border border-gold/20;
+    @apply text-white placeholder-white/30;
+    @apply transition-all duration-300;
+    @apply focus:outline-none focus:border-gold/50;
+  }
+
+  .input-casino:focus {
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.15);
+  }
+
+  /* ========================================
+     チャットバブル
+     ======================================== */
+  .chat-bubble-user {
+    @apply bg-gradient-to-br from-neon-purple/80 to-fake/60;
+    @apply rounded-2xl rounded-br-sm;
+    @apply px-4 py-3;
+    @apply border border-fake/30;
+  }
+
+  .chat-bubble-ai {
+    @apply bg-casino-felt;
+    @apply rounded-2xl rounded-bl-sm;
+    @apply px-4 py-3;
+    @apply border border-gold/20;
+  }
+
+  /* ========================================
+     シマー効果
+     ======================================== */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 215, 0, 0.1),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+}
+
+/* ========================================
+   ユーティリティレイヤー
+   ======================================== */
+@layer utilities {
+  /* グラスモーフィズム */
+  .glass-dark {
+    @apply bg-casino-velvet/80 backdrop-blur-md;
+    @apply border border-white/5;
+  }
+
+  /* グロー効果 */
+  .glow-safe {
+    box-shadow: 0 0 20px var(--color-safe-glow);
+  }
+
+  .glow-gamble {
+    box-shadow: 0 0 25px var(--color-gamble-glow);
+  }
+
+  .glow-mine {
+    box-shadow: 0 0 30px var(--color-mine-glow);
+  }
+
+  /* テキストグラデーション */
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #ffd700 0%, #f5d742 50%, #ffe44d 100%);
+  }
+
+  /* 3D変形用 */
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  /* スクロールバー非表示 (モバイル横スクロール用) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* セーフエリア対応パディング */
+  .safe-area-bottom {
+    padding-bottom: max(16px, var(--safe-area-bottom));
+  }
+  .safe-area-top {
+    padding-top: max(16px, var(--safe-area-top));
+  }
+}
+
+/* ========================================
+   アクセシビリティ: モーション軽減
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .shimmer::after {
+    animation: none;
+  }
+}
+
+/* ========================================
+   追加キーフレーム (Tailwindで定義しきれないもの)
+   ======================================== */
+@keyframes glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 30px currentColor);
+  }
+}
+
+@keyframes border-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px) rotate(90deg);
+  }
+  50% {
+    transform: translateY(-40px) translateX(-10px) rotate(180deg);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translateY(-20px) translateX(5px) rotate(270deg);
+  }
+}
+
+/* ========================================
+   レガシーリスクバッジ (後方互換)
+   ======================================== */
+.risk-badge {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.risk-badge-safe {
+  @apply bg-safe/20 text-safe border border-safe/30;
+}
+
+.risk-badge-gamble {
+  @apply bg-gamble/20 text-gamble border border-gamble/30;
+}
+
+.risk-badge-mine {
+  @apply bg-mine/20 text-mine border border-mine/30;
+}
+
+.risk-badge-fake {
+  @apply bg-fake/20 text-fake border border-fake/30 opacity-70;
+}
+
+/* ========================================
+   ショップカード (後方互換 + 強化)
+   ======================================== */
+.shop-card {
+  @apply casino-card;
+}
+
+.shop-card:hover {
+  @apply shadow-casino-card-hover;
+}
