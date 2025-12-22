@@ -1,10 +1,11 @@
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
-from app.services.review_service import ReviewService
 from app.schemas.review import ReviewResponse
+from app.services.review_service import ReviewService
 
 router = APIRouter()
 

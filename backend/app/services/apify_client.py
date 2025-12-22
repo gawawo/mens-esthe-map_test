@@ -100,12 +100,7 @@ class ApifyReviewsService:
             正規化されたレビューデータ、無効な場合はNone
         """
         # レビューテキストを取得（複数の可能なキー名に対応）
-        text = (
-            item.get("text")
-            or item.get("reviewText")
-            or item.get("review_text")
-            or ""
-        )
+        text = item.get("text") or item.get("reviewText") or item.get("review_text") or ""
 
         # 評価を取得
         rating = item.get("stars") or item.get("rating")
@@ -114,10 +109,7 @@ class ApifyReviewsService:
 
         # 投稿者名を取得
         author_name = (
-            item.get("name")
-            or item.get("reviewer_name")
-            or item.get("reviewerName")
-            or "Anonymous"
+            item.get("name") or item.get("reviewer_name") or item.get("reviewerName") or "Anonymous"
         )
 
         # 投稿時刻を解析
@@ -151,9 +143,7 @@ class ApifyReviewsService:
         """
         # 複数の日付フィールドを試行
         date_str = (
-            item.get("publishedAtDate")
-            or item.get("published_date")
-            or item.get("reviewDate")
+            item.get("publishedAtDate") or item.get("published_date") or item.get("reviewDate")
         )
 
         if not date_str:

@@ -5,8 +5,8 @@ Gemini APIを使用してレビューを日本語に翻訳
 
 import asyncio
 import logging
-from typing import Optional
 from dataclasses import dataclass
+from typing import Optional
 
 from app.ai.llm_client import get_gemini_client
 
@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TranslationResult:
     """翻訳結果"""
+
     original_text: str
     translated_text: str
     source_language: str
@@ -83,11 +84,8 @@ class TranslatorService:
         results = []
 
         for i in range(0, len(texts), batch_size):
-            batch = texts[i:i + batch_size]
-            tasks = [
-                self.translate_to_japanese(text, lang)
-                for text, lang in batch
-            ]
+            batch = texts[i : i + batch_size]
+            tasks = [self.translate_to_japanese(text, lang) for text, lang in batch]
             batch_results = await asyncio.gather(*tasks, return_exceptions=True)
 
             for j, result in enumerate(batch_results):

@@ -5,9 +5,9 @@
 
 import asyncio
 import logging
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Callable, Optional
-from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ScheduledJob:
     """スケジュールされたジョブ"""
+
     name: str
     func: Callable
     interval_minutes: int

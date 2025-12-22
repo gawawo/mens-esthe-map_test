@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 
@@ -43,5 +44,6 @@ class AnalyticsResponse(AnalyticsBase):
 
 class AnalyticsWithShopResponse(AnalyticsResponse):
     """解析結果と店舗情報を含むレスポンス"""
+
     shop_name: str
     shop_place_id: str

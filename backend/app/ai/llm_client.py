@@ -1,9 +1,10 @@
 import json
 import logging
 from typing import Optional, Type, TypeVar
-from pydantic import BaseModel
+
 import google.generativeai as genai
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from pydantic import BaseModel
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from app.config import settings
 
@@ -171,11 +172,11 @@ class GeminiClient:
         import re
 
         # 末尾のカンマを削除（配列・オブジェクト内）
-        json_str = re.sub(r',\s*}', '}', json_str)
-        json_str = re.sub(r',\s*]', ']', json_str)
+        json_str = re.sub(r",\s*}", "}", json_str)
+        json_str = re.sub(r",\s*]", "]", json_str)
 
         # 制御文字を削除
-        json_str = re.sub(r'[\x00-\x1f\x7f]', '', json_str)
+        json_str = re.sub(r"[\x00-\x1f\x7f]", "", json_str)
 
         return json_str
 

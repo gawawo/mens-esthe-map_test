@@ -7,22 +7,23 @@ import logging
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.ai.llm_client import GeminiClient, get_gemini_client
 from app.ai.prompts import (
+    REVIEW_ANALYSIS_SYSTEM_PROMPT,
     build_analysis_prompt,
     build_minimal_analysis_prompt,
-    REVIEW_ANALYSIS_SYSTEM_PROMPT,
 )
 from app.ai.scoring import (
     AnalysisResult,
-    post_process_analysis,
     create_default_analysis,
+    post_process_analysis,
 )
-from app.models.shop import Shop
-from app.models.review import Review
 from app.models.analytics import ShopAIAnalytics
+from app.models.review import Review
+from app.models.shop import Shop
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +65,7 @@ class ReviewAnalyzer:
 
         # 既存の解析結果をチェック
         existing_analytics = (
-            self.db.query(ShopAIAnalytics)
-            .filter(ShopAIAnalytics.shop_id == shop_id)
-            .first()
+            self.db.query(ShopAIAnalytics).filter(ShopAIAnalytics.shop_id == shop_id).first()
         )
 
         if existing_analytics and not force:
@@ -240,10 +239,12 @@ class ReviewAnalyzer:
                     results["skipped"] += 1
             except Exception as e:
                 results["failed"] += 1
-                results["errors"].append({
-                    "shop_id": str(shop_id),
-                    "error": str(e),
-                })
+                results["errors"].append(
+                    {
+                        "shop_id": str(shop_id),
+                        "error": str(e),
+                    }
+                )
                 logger.error(f"Failed to analyze shop {shop_id}: {e}")
 
         return results

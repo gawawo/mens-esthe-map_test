@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import shops, reviews, analytics, ingestion, search
+from app.api.v1 import analytics, ingestion, reviews, search, shops
 
 api_router = APIRouter()
 

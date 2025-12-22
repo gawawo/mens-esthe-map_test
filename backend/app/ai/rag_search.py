@@ -4,17 +4,16 @@ RAG（Retrieval-Augmented Generation）検索サービス
 """
 
 import logging
-from typing import Optional
-from uuid import UUID
 from dataclasses import dataclass
-from sqlalchemy.orm import Session
+from typing import Optional
+
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from app.ai.embeddings import get_embedding_service
 from app.ai.llm_client import get_gemini_client
-from app.models.shop import Shop
-from app.models.review import Review
 from app.models.analytics import ShopAIAnalytics
+from app.models.shop import Shop
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SearchResult:
     """検索結果"""
+
     shop_id: str
     shop_name: str
     relevance_score: float
@@ -32,6 +32,7 @@ class SearchResult:
 @dataclass
 class ChatSearchResponse:
     """チャット検索レスポンス"""
+
     query: str
     answer: str
     results: list[SearchResult]
@@ -70,7 +71,8 @@ class RAGSearchService:
         embedding_str = "[" + ",".join(str(x) for x in query_embedding) + "]"
 
         # pgvectorで類似検索
-        sql = text("""
+        sql = text(
+            """
             SELECT
                 r.id AS review_id,
                 r.shop_id,
@@ -84,7 +86,8 @@ class RAGSearchService:
             WHERE r.embedding IS NOT NULL
             ORDER BY r.embedding <=> CAST(:query_embedding AS vector)
             LIMIT :limit
-        """)
+        """
+        )
 
         results = self.db.execute(
             sql,
@@ -168,11 +171,13 @@ class RAGSearchService:
                 )
 
             # レビューを追加
-            shop_results[shop_id].matched_reviews.append({
-                "text": review["review_text"],
-                "rating": review["rating"],
-                "similarity": review["similarity"],
-            })
+            shop_results[shop_id].matched_reviews.append(
+                {
+                    "text": review["review_text"],
+                    "rating": review["rating"],
+                    "similarity": review["similarity"],
+                }
+            )
 
             # 最高の類似度を保持
             if review["similarity"] > shop_results[shop_id].relevance_score:
@@ -240,12 +245,12 @@ class RAGSearchService:
             if result.analytics:
                 analytics = result.analytics
                 shop_info += f"\n- リスクレベル: {analytics.get('risk_level', '不明')}"
-                if analytics.get('risk_summary'):
+                if analytics.get("risk_summary"):
                     shop_info += f"\n- AI評価: {analytics['risk_summary']}"
 
             shop_info += "\n- 関連レビュー:"
             for j, review in enumerate(result.matched_reviews[:3], 1):
-                rating = f"★{review['rating']}" if review['rating'] else ""
+                rating = f"★{review['rating']}" if review["rating"] else ""
                 shop_info += f"\n  {j}. {rating} {review['text'][:100]}..."
 
             context_parts.append(shop_info)
@@ -304,10 +309,7 @@ class StructuredSearchService:
             min_rating: 最低Google評価
             limit: 最大件数
         """
-        query = (
-            self.db.query(Shop)
-            .outerjoin(ShopAIAnalytics)
-        )
+        query = self.db.query(Shop).outerjoin(ShopAIAnalytics)
 
         if min_rating is not None:
             query = query.filter(Shop.rating >= min_rating)
@@ -322,12 +324,14 @@ class StructuredSearchService:
             # 平均スコアでフィルタ
             query = query.filter(
                 (
-                    ShopAIAnalytics.score_operation +
-                    ShopAIAnalytics.score_accuracy +
-                    ShopAIAnalytics.score_hygiene +
-                    ShopAIAnalytics.score_sincerity +
-                    ShopAIAnalytics.score_safety
-                ) / 5 >= min_score
+                    ShopAIAnalytics.score_operation
+                    + ShopAIAnalytics.score_accuracy
+                    + ShopAIAnalytics.score_hygiene
+                    + ShopAIAnalytics.score_sincerity
+                    + ShopAIAnalytics.score_safety
+                )
+                / 5
+                >= min_score
             )
 
         return query.limit(limit).all()

@@ -3,17 +3,17 @@ import logging
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Body
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
-from app.services.ingestion import IngestionService, PREDEFINED_AREAS, AreaDefinition
-from app.services.places_api import PlacesAPIClient
-from app.services.shop_service import ShopService
-from app.services.review_service import ReviewService
-from app.services.apify_client import ApifyReviewsService
 from app.models.shop import Shop
+from app.services.apify_client import ApifyReviewsService
+from app.services.ingestion import PREDEFINED_AREAS, AreaDefinition, IngestionService
+from app.services.places_api import PlacesAPIClient
+from app.services.review_service import ReviewService
+from app.services.shop_service import ShopService
 
 logger = logging.getLogger(__name__)
 
@@ -168,8 +168,7 @@ async def refresh_reviews(
         try:
             # 日本語でレビューを取得
             detail = await places_client.get_place_details(
-                place_id=shop.place_id,
-                language_code="ja"
+                place_id=shop.place_id, language_code="ja"
             )
 
             # 既存レビューを削除
@@ -291,7 +290,7 @@ async def fetch_all_reviews_batch(
 
             # 既存レビュー削除 & 新規保存
             review_service = ReviewService(db)
-            deleted_count = review_service.delete_by_shop_id(shop.id)
+            review_service.delete_by_shop_id(shop.id)
             created_reviews = review_service.bulk_create(shop.id, reviews)
 
             result = {

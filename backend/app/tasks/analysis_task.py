@@ -2,15 +2,15 @@
 AI解析バッチタスク
 """
 
-import asyncio
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
-from dataclasses import dataclass
+
 from sqlalchemy.orm import Session
 
-from app.db.session import SessionLocal
 from app.ai.analyzer import ReviewAnalyzer
+from app.db.session import SessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AnalysisTaskResult:
     """解析タスクの結果"""
+
     started_at: datetime
     completed_at: datetime
     total_shops: int

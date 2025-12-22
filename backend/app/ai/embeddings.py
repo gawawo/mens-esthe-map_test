@@ -5,16 +5,16 @@
 
 import asyncio
 import logging
+from dataclasses import dataclass
 from typing import Optional
 from uuid import UUID
-from dataclasses import dataclass
+
 import google.generativeai as genai
-from sqlalchemy.orm import Session
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.models.review import Review
-from app.models.shop import Shop
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +119,7 @@ class EmbeddingService:
 @dataclass
 class EmbeddingBatchResult:
     """埋め込みバッチ処理結果"""
+
     total_reviews: int
     embedded: int
     skipped: int
@@ -166,11 +167,7 @@ class ReviewEmbeddingService:
 
         # 対象レビューを取得
         if review_ids:
-            reviews = (
-                self.db.query(Review)
-                .filter(Review.id.in_(review_ids))
-                .all()
-            )
+            reviews = self.db.query(Review).filter(Review.id.in_(review_ids)).all()
         else:
             reviews = self.get_reviews_without_embedding(limit)
 
@@ -204,9 +201,7 @@ class ReviewEmbeddingService:
                 try:
                     # pgvector形式で保存
                     self.db.execute(
-                        text(
-                            "UPDATE reviews SET embedding = :embedding WHERE id = :id"
-                        ),
+                        text("UPDATE reviews SET embedding = :embedding WHERE id = :id"),
                         {"embedding": embedding, "id": str(review.id)},
                     )
                     result.embedded += 1

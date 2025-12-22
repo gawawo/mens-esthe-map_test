@@ -1,5 +1,6 @@
 from typing import Optional
 from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.models.review import Review
@@ -55,7 +56,9 @@ class ReviewService:
             .all()
         )
 
-    def get_by_shop_and_author(self, shop_id: UUID, author_name: str, time: int) -> Optional[Review]:
+    def get_by_shop_and_author(
+        self, shop_id: UUID, author_name: str, time: int
+    ) -> Optional[Review]:
         """店舗ID、著者名、投稿時刻でレビューを検索（重複チェック用）"""
         return (
             self.db.query(Review)
@@ -126,18 +129,10 @@ class ReviewService:
 
     def delete_by_shop_id(self, shop_id: UUID) -> int:
         """店舗のレビューを全削除"""
-        deleted_count = (
-            self.db.query(Review)
-            .filter(Review.shop_id == shop_id)
-            .delete()
-        )
+        deleted_count = self.db.query(Review).filter(Review.shop_id == shop_id).delete()
         self.db.commit()
         return deleted_count
 
     def count_by_shop_id(self, shop_id: UUID) -> int:
         """店舗のレビュー数をカウント"""
-        return (
-            self.db.query(Review)
-            .filter(Review.shop_id == shop_id)
-            .count()
-        )
+        return self.db.query(Review).filter(Review.shop_id == shop_id).count()
