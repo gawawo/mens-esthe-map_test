@@ -10,7 +10,12 @@ const nextConfig = {
   // Backend APIへのプロキシ設定
   async rewrites() {
     // Docker環境では backend サービス名を使用、ローカル開発では localhost
-    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8000';
+    let backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8000';
+    // プロトコルがない場合は https:// を追加
+    if (backendUrl && !backendUrl.startsWith('http://') && !backendUrl.startsWith('https://')) {
+      backendUrl = 'https://' + backendUrl;
+    }
+    console.log('Rewrite destination:', backendUrl);
     return [
       {
         source: '/api/v1/:path*',
