@@ -67,7 +67,8 @@ Key modules:
 - **Recharts** for radar charts
 
 Key structure:
-- `src/app/page.tsx` - Main page with map + sidebar + AI chat
+- `src/app/page.tsx` - Server component that fetches initial shop data (SSR)
+- `src/components/ClientPage.tsx` - Client wrapper receiving SSR data
 - `src/components/Map/` - MapContainer, ShopMarker, MapFilterChips, ShopCarousel, MapSearchBar
 - `src/components/Shop/` - ShopCard, RadarChart (5-axis), RiskBadge, ShopDetailPanel
 - `src/components/Filter/` - DetailedFilterPanel (sliders for rating/sakura risk)
@@ -136,3 +137,13 @@ Ingestion supports these Tokyo areas (in `app/services/ingestion.py`):
 - Ikebukuro (池袋): radius 1000m
 - Ueno (上野): radius 1000m
 - Akihabara (秋葉原): radius 800m
+
+## Production Deployment (Railway)
+- Frontend: `keen-abundance-production.up.railway.app`
+- Backend: `mens-esthe-map-production.up.railway.app`
+- Database: Supabase (PostgreSQL with PostGIS + pgvector)
+
+Railway environment variables for Frontend:
+- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` - Google Maps API key
+- `NEXT_PUBLIC_GOOGLE_MAP_ID` - Google Maps Map ID
+- `BACKEND_API_URL` - Backend API URL (e.g., `https://mens-esthe-map-production.up.railway.app`)
