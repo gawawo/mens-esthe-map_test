@@ -27,8 +27,9 @@ alembic upgrade head
 alembic revision --autogenerate -m "description"
 
 # Linting & Formatting
-black app/
-ruff check app/
+black app/              # Format code
+black --check app/      # Check formatting only (CI uses this)
+ruff check app/         # Lint check
 
 # Tests
 pytest

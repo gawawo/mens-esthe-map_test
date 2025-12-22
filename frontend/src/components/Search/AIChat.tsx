@@ -260,7 +260,7 @@ function SearchResultCard({ result, onSelect }: SearchResultCardProps) {
       {result.matched_reviews.length > 0 && (
         <div className="mt-2 text-xs text-white/50">
           <p className="line-clamp-2">
-            "{result.matched_reviews[0].text.slice(0, 80)}..."
+            &ldquo;{result.matched_reviews[0].text.slice(0, 80)}...&rdquo;
           </p>
         </div>
       )}
