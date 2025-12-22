@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 
@@ -43,6 +44,7 @@ class ShopUpdate(BaseModel):
 
 class AnalyticsSummary(BaseModel):
     """店舗一覧用の解析結果サマリー"""
+
     risk_level: Optional[str] = None
     score_operation: Optional[int] = None
     score_accuracy: Optional[int] = None

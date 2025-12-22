@@ -1,8 +1,9 @@
 from typing import Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
-from sqlalchemy.orm import Session
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.models.analytics import ShopAIAnalytics
@@ -14,6 +15,7 @@ router = APIRouter()
 
 class AnalyzeRequest(BaseModel):
     """解析リクエスト"""
+
     shop_ids: Optional[list[str]] = None  # 指定した店舗のみ解析
     limit: int = 20  # 未解析店舗の最大処理数
     force: bool = False  # 既存の解析結果を上書きするか
@@ -21,6 +23,7 @@ class AnalyzeRequest(BaseModel):
 
 class AnalyzeResponse(BaseModel):
     """解析レスポンス"""
+
     status: str
     message: str
     total_shops: int = 0
@@ -35,11 +38,7 @@ def get_shop_analytics(
     db: Session = Depends(get_db),
 ):
     """店舗のAI解析結果を取得"""
-    analytics = (
-        db.query(ShopAIAnalytics)
-        .filter(ShopAIAnalytics.shop_id == shop_id)
-        .first()
-    )
+    analytics = db.query(ShopAIAnalytics).filter(ShopAIAnalytics.shop_id == shop_id).first()
 
     if not analytics:
         raise HTTPException(status_code=404, detail="Analytics not found for this shop")
@@ -55,13 +54,10 @@ def get_risk_summary(
     """リスクレベル別の店舗数サマリーを取得"""
     from sqlalchemy import func
 
-    query = (
-        db.query(
-            ShopAIAnalytics.risk_level,
-            func.count(ShopAIAnalytics.shop_id).label("count"),
-        )
-        .group_by(ShopAIAnalytics.risk_level)
-    )
+    query = db.query(
+        ShopAIAnalytics.risk_level,
+        func.count(ShopAIAnalytics.shop_id).label("count"),
+    ).group_by(ShopAIAnalytics.risk_level)
 
     if risk_level:
         query = query.filter(ShopAIAnalytics.risk_level == risk_level)
@@ -69,10 +65,7 @@ def get_risk_summary(
     results = query.all()
 
     return {
-        "summary": [
-            {"risk_level": r.risk_level, "count": r.count}
-            for r in results
-        ],
+        "summary": [{"risk_level": r.risk_level, "count": r.count} for r in results],
         "total": sum(r.count for r in results),
     }
 

@@ -2,12 +2,13 @@ import asyncio
 import logging
 from dataclasses import dataclass
 from typing import Optional
+
 from sqlalchemy.orm import Session
 
-from app.services.places_api import PlacesAPIClient
-from app.services.shop_service import ShopService
-from app.services.review_service import ReviewService
 from app.schemas.shop import ShopCreate
+from app.services.places_api import PlacesAPIClient
+from app.services.review_service import ReviewService
+from app.services.shop_service import ShopService
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AreaDefinition:
     """エリア定義"""
+
     name: str
     latitude: float
     longitude: float
@@ -64,6 +66,7 @@ PREDEFINED_AREAS = {
 @dataclass
 class IngestionResult:
     """取込結果"""
+
     area_name: str
     shops_found: int
     shops_created: int

@@ -1,14 +1,15 @@
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, select
-from geoalchemy2.functions import ST_MakePoint, ST_DWithin, ST_X, ST_Y
-from geoalchemy2.shape import to_shape
 
-from app.models.shop import Shop
+from geoalchemy2.functions import ST_DWithin, ST_MakePoint
+from geoalchemy2.shape import to_shape
+from sqlalchemy import func
+from sqlalchemy.orm import Session, joinedload
+
 from app.models.analytics import ShopAIAnalytics
-from app.schemas.shop import ShopCreate, ShopUpdate, ShopResponse, LocationSchema
+from app.models.shop import Shop
+from app.schemas.shop import LocationSchema, ShopCreate, ShopResponse, ShopUpdate
 
 
 class ShopService:
@@ -40,9 +41,7 @@ class ShopService:
 
         # フィルター適用
         if risk_level:
-            query = query.join(Shop.analytics).filter(
-                ShopAIAnalytics.risk_level == risk_level
-            )
+            query = query.join(Shop.analytics).filter(ShopAIAnalytics.risk_level == risk_level)
 
         if min_rating is not None:
             query = query.filter(Shop.rating >= min_rating)
@@ -61,8 +60,6 @@ class ShopService:
         risk_level: Optional[str] = None,
     ) -> list[Shop]:
         """指定座標の近隣店舗を取得"""
-        point = func.ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)
-
         query = (
             self.db.query(Shop)
             .options(joinedload(Shop.analytics))
@@ -76,9 +73,7 @@ class ShopService:
         )
 
         if risk_level:
-            query = query.join(Shop.analytics).filter(
-                ShopAIAnalytics.risk_level == risk_level
-            )
+            query = query.join(Shop.analytics).filter(ShopAIAnalytics.risk_level == risk_level)
 
         return query.limit(limit).all()
 
@@ -98,11 +93,11 @@ class ShopService:
         """
         # 平均スコア計算
         avg_score = (
-            ShopAIAnalytics.score_operation +
-            ShopAIAnalytics.score_accuracy +
-            ShopAIAnalytics.score_hygiene +
-            ShopAIAnalytics.score_sincerity +
-            ShopAIAnalytics.score_safety
+            ShopAIAnalytics.score_operation
+            + ShopAIAnalytics.score_accuracy
+            + ShopAIAnalytics.score_hygiene
+            + ShopAIAnalytics.score_sincerity
+            + ShopAIAnalytics.score_safety
         ) / 5.0
 
         query = (
@@ -130,9 +125,7 @@ class ShopService:
     def create(self, shop_data: ShopCreate) -> Shop:
         """新規店舗を作成"""
         # PostGIS POINTを作成
-        location = func.ST_SetSRID(
-            ST_MakePoint(shop_data.longitude, shop_data.latitude), 4326
-        )
+        location = func.ST_SetSRID(ST_MakePoint(shop_data.longitude, shop_data.latitude), 4326)
 
         shop = Shop(
             place_id=shop_data.place_id,
@@ -160,18 +153,21 @@ class ShopService:
         existing = self.get_by_place_id(shop_data.place_id)
 
         if existing:
-            return self.update(existing.id, ShopUpdate(
-                name=shop_data.name,
-                formatted_address=shop_data.formatted_address,
-                rating=shop_data.rating,
-                user_ratings_total=shop_data.user_ratings_total,
-                price_level=shop_data.price_level,
-                business_status=shop_data.business_status,
-                opening_hours=shop_data.opening_hours,
-                phone_number=shop_data.phone_number,
-                website=shop_data.website,
-                raw_data=shop_data.raw_data,
-            ))
+            return self.update(
+                existing.id,
+                ShopUpdate(
+                    name=shop_data.name,
+                    formatted_address=shop_data.formatted_address,
+                    rating=shop_data.rating,
+                    user_ratings_total=shop_data.user_ratings_total,
+                    price_level=shop_data.price_level,
+                    business_status=shop_data.business_status,
+                    opening_hours=shop_data.opening_hours,
+                    phone_number=shop_data.phone_number,
+                    website=shop_data.website,
+                    raw_data=shop_data.raw_data,
+                ),
+            )
         else:
             return self.create(shop_data)
 

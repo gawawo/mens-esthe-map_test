@@ -4,9 +4,10 @@ AI検索API
 """
 
 from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 
@@ -15,12 +16,14 @@ router = APIRouter()
 
 class ChatSearchRequest(BaseModel):
     """チャット検索リクエスト"""
+
     query: str
     limit: int = 5
 
 
 class SearchResultItem(BaseModel):
     """検索結果アイテム"""
+
     shop_id: str
     shop_name: str
     relevance_score: float
@@ -30,6 +33,7 @@ class SearchResultItem(BaseModel):
 
 class ChatSearchResponse(BaseModel):
     """チャット検索レスポンス"""
+
     query: str
     answer: str
     results: list[SearchResultItem]
@@ -38,11 +42,13 @@ class ChatSearchResponse(BaseModel):
 
 class EmbeddingRequest(BaseModel):
     """埋め込みリクエスト"""
+
     limit: int = 100
 
 
 class EmbeddingResponse(BaseModel):
     """埋め込みレスポンス"""
+
     total_reviews: int
     embedded: int
     skipped: int
@@ -52,11 +58,13 @@ class EmbeddingResponse(BaseModel):
 
 class TranslationRequest(BaseModel):
     """翻訳リクエスト"""
+
     limit: int = 50
 
 
 class TranslationResponse(BaseModel):
     """翻訳レスポンス"""
+
     total_reviews: int
     translated: int
     skipped: int
@@ -145,7 +153,9 @@ async def vector_search(
 def structured_search(
     min_score: Optional[int] = Query(None, ge=0, le=10, description="最低平均スコア"),
     max_sakura_risk: Optional[int] = Query(None, ge=0, le=100, description="最大サクラリスク"),
-    risk_levels: Optional[str] = Query(None, description="リスクレベル（カンマ区切り: safe,gamble,mine,fake）"),
+    risk_levels: Optional[str] = Query(
+        None, description="リスクレベル（カンマ区切り: safe,gamble,mine,fake）"
+    ),
     min_rating: Optional[float] = Query(None, ge=0, le=5, description="最低Google評価"),
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
@@ -219,15 +229,12 @@ def get_embedding_status(
     """
     埋め込み状況を確認
     """
-    from app.models.review import Review
     from sqlalchemy import func
 
+    from app.models.review import Review
+
     total_reviews = db.query(func.count(Review.id)).scalar()
-    embedded_reviews = (
-        db.query(func.count(Review.id))
-        .filter(Review.embedding.isnot(None))
-        .scalar()
-    )
+    embedded_reviews = db.query(func.count(Review.id)).filter(Review.embedding.isnot(None)).scalar()
     pending_reviews = total_reviews - embedded_reviews
 
     return {
@@ -235,9 +242,7 @@ def get_embedding_status(
         "embedded_reviews": embedded_reviews,
         "pending_reviews": pending_reviews,
         "embedding_rate": (
-            round(embedded_reviews / total_reviews * 100, 1)
-            if total_reviews > 0
-            else 0
+            round(embedded_reviews / total_reviews * 100, 1) if total_reviews > 0 else 0
         ),
     }
 
@@ -252,8 +257,8 @@ async def generate_translations(
 
     日本語以外のレビューで、まだ翻訳がないものを対象に処理
     """
-    from app.services.review_service import ReviewService
     from app.ai.translator import get_translator_service
+    from app.services.review_service import ReviewService
 
     review_service = ReviewService(db)
     translator = get_translator_service()
@@ -306,18 +311,15 @@ def get_translation_status(
     """
     翻訳状況を確認
     """
-    from app.models.review import Review
     from sqlalchemy import func
+
+    from app.models.review import Review
 
     # 全レビュー数
     total_reviews = db.query(func.count(Review.id)).scalar()
 
     # 日本語レビュー数（翻訳不要）
-    ja_reviews = (
-        db.query(func.count(Review.id))
-        .filter(Review.language == "ja")
-        .scalar()
-    )
+    ja_reviews = db.query(func.count(Review.id)).filter(Review.language == "ja").scalar()
 
     # 翻訳済みレビュー数
     translated_reviews = (

@@ -1,5 +1,6 @@
-import httpx
 from typing import Optional
+
+import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.config import settings
@@ -219,7 +220,8 @@ class PlacesAPIClient:
             "price_level": self._parse_price_level(place.get("priceLevel")),
             "business_status": place.get("businessStatus"),
             "opening_hours": opening_hours,
-            "phone_number": place.get("nationalPhoneNumber") or place.get("internationalPhoneNumber"),
+            "phone_number": place.get("nationalPhoneNumber")
+            or place.get("internationalPhoneNumber"),
             "website": place.get("websiteUri"),
             "raw_data": place,
         }
@@ -232,17 +234,19 @@ class PlacesAPIClient:
         parsed_reviews = []
 
         for review in reviews:
-            parsed_reviews.append({
-                "author_name": review.get("authorAttribution", {}).get("displayName"),
-                "author_url": review.get("authorAttribution", {}).get("uri"),
-                "profile_photo_url": review.get("authorAttribution", {}).get("photoUri"),
-                "rating": review.get("rating"),
-                "text": review.get("text", {}).get("text", ""),
-                "language": review.get("text", {}).get("languageCode"),
-                "relative_time_description": review.get("relativePublishTimeDescription"),
-                "time": self._parse_publish_time(review.get("publishTime")),
-                "raw_data": review,
-            })
+            parsed_reviews.append(
+                {
+                    "author_name": review.get("authorAttribution", {}).get("displayName"),
+                    "author_url": review.get("authorAttribution", {}).get("uri"),
+                    "profile_photo_url": review.get("authorAttribution", {}).get("photoUri"),
+                    "rating": review.get("rating"),
+                    "text": review.get("text", {}).get("text", ""),
+                    "language": review.get("text", {}).get("languageCode"),
+                    "relative_time_description": review.get("relativePublishTimeDescription"),
+                    "time": self._parse_publish_time(review.get("publishTime")),
+                    "raw_data": review,
+                }
+            )
 
         return parsed_reviews
 
@@ -264,6 +268,7 @@ class PlacesAPIClient:
         if publish_time is None:
             return None
         from datetime import datetime
+
         try:
             dt = datetime.fromisoformat(publish_time.replace("Z", "+00:00"))
             return int(dt.timestamp())

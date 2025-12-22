@@ -1,6 +1,7 @@
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, Float, Text, DateTime, ForeignKey, CheckConstraint
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+
+from sqlalchemy import CheckConstraint, Column, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import relationship
 
 from app.models.base import Base
@@ -9,21 +10,23 @@ from app.models.base import Base
 class ShopAIAnalytics(Base):
     __tablename__ = "shop_ai_analytics"
 
-    shop_id = Column(UUID(as_uuid=True), ForeignKey("shops.id", ondelete="CASCADE"), primary_key=True)
+    shop_id = Column(
+        UUID(as_uuid=True), ForeignKey("shops.id", ondelete="CASCADE"), primary_key=True
+    )
 
     # リスク回避5角形スコア（10点満点：高いほど安全）
-    score_operation = Column(Integer)   # 運営のまともさ
-    score_accuracy = Column(Integer)    # 情報の正確性
-    score_hygiene = Column(Integer)     # 衛生・環境
-    score_sincerity = Column(Integer)   # 施術の誠実さ
-    score_safety = Column(Integer)      # 心理的安全性
+    score_operation = Column(Integer)  # 運営のまともさ
+    score_accuracy = Column(Integer)  # 情報の正確性
+    score_hygiene = Column(Integer)  # 衛生・環境
+    score_sincerity = Column(Integer)  # 施術の誠実さ
+    score_safety = Column(Integer)  # 心理的安全性
 
     # 裏パラメータ
-    variance_score = Column(Float)      # ギャンブル度（0-100）
-    sakura_risk = Column(Integer)       # サクラ汚染度（0-100%）
+    variance_score = Column(Float)  # ギャンブル度（0-100）
+    sakura_risk = Column(Integer)  # サクラ汚染度（0-100%）
 
     # 総合判定
-    risk_level = Column(String(20))     # safe/gamble/mine/fake
+    risk_level = Column(String(20))  # safe/gamble/mine/fake
 
     # テキスト情報
     risk_summary = Column(Text)

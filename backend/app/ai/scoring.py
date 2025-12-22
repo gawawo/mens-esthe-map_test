@@ -3,7 +3,6 @@
 LLM出力の後処理とリスクレベル判定
 """
 
-from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -151,8 +150,15 @@ def detect_sakura_reviews(reviews: list[dict]) -> tuple[int, list[str]]:
 
     # サクラの特徴パターン
     short_praise_patterns = [
-        "最高", "神", "また行く", "また来ます", "リピ確定",
-        "おすすめ", "良かった", "満足", "文句なし",
+        "最高",
+        "神",
+        "また行く",
+        "また来ます",
+        "リピ確定",
+        "おすすめ",
+        "良かった",
+        "満足",
+        "文句なし",
     ]
 
     for review in reviews:
@@ -181,10 +187,12 @@ def detect_sakura_reviews(reviews: list[dict]) -> tuple[int, list[str]]:
             reasons.append("テキストなし高評価")
 
         if is_suspicious:
-            suspicious_reviews.append({
-                "text": text[:50] + "..." if len(text) > 50 else text,
-                "reasons": reasons,
-            })
+            suspicious_reviews.append(
+                {
+                    "text": text[:50] + "..." if len(text) > 50 else text,
+                    "reasons": reasons,
+                }
+            )
             sakura_indicators += 1
 
     # サクラ疑惑度を計算（疑わしいレビューの割合）
@@ -210,7 +218,7 @@ def post_process_analysis(
     # Pydanticでバリデーション
     try:
         result = AnalysisResult.model_validate(llm_result)
-    except Exception as e:
+    except Exception:
         # バリデーションエラー時はデフォルト値で補完
         result = AnalysisResult(
             score_operation=llm_result.get("score_operation", 5),

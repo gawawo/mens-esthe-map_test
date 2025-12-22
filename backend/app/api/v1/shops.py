@@ -1,14 +1,15 @@
 from typing import Optional
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
-from app.services.shop_service import ShopService
-from app.services.review_service import ReviewService
-from app.schemas.shop import ShopResponse, ShopListResponse
 from app.schemas.review import ReviewListResponse
+from app.schemas.shop import ShopListResponse, ShopResponse
 from app.services.ingestion import PREDEFINED_AREAS
+from app.services.review_service import ReviewService
+from app.services.shop_service import ShopService
 
 router = APIRouter()
 
@@ -64,12 +65,16 @@ def get_nearby_shops(
 @router.get("/ranking")
 def get_shop_ranking(
     db: Session = Depends(get_db),
-    area: Optional[str] = Query(None, description="エリアキー: shinjuku/shibuya/ikebukuro/ueno/akihabara"),
+    area: Optional[str] = Query(
+        None, description="エリアキー: shinjuku/shibuya/ikebukuro/ueno/akihabara"
+    ),
     lat: Optional[float] = Query(None, description="緯度（areaが指定されない場合必須）"),
     lng: Optional[float] = Query(None, description="経度（areaが指定されない場合必須）"),
     radius: float = Query(2000.0, description="検索半径（メートル）"),
     limit: int = Query(20, ge=1, le=50),
-    sort_by: str = Query("avg_score", description="ソート基準: avg_score/score_safety/score_accuracy"),
+    sort_by: str = Query(
+        "avg_score", description="ソート基準: avg_score/score_safety/score_accuracy"
+    ),
 ):
     """
     エリア内店舗の評価ランキングを取得
@@ -86,14 +91,11 @@ def get_shop_ranking(
         else:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid area key: {area}. Valid keys: {list(PREDEFINED_AREAS.keys())}"
+                detail=f"Invalid area key: {area}. Valid keys: {list(PREDEFINED_AREAS.keys())}",
             )
 
     if lat is None or lng is None:
-        raise HTTPException(
-            status_code=400,
-            detail="Either area or lat/lng must be provided"
-        )
+        raise HTTPException(status_code=400, detail="Either area or lat/lng must be provided")
 
     shop_service = ShopService(db)
     results = shop_service.get_nearby_with_ranking(
@@ -114,7 +116,7 @@ def get_shop_ranking(
                 "avg_score": round(avg_score, 1),
             }
             for i, (shop, avg_score) in enumerate(results)
-        ]
+        ],
     }
 
 
