@@ -138,6 +138,32 @@ Ingestion supports these Tokyo areas (in `app/services/ingestion.py`):
 - Ueno (上野): radius 1000m
 - Akihabara (秋葉原): radius 800m
 
+## Development Workflow (PR-based)
+
+**重要**: mainブランチへの直接pushは禁止。必ずPR経由で変更する。
+
+```bash
+# 1. 機能ブランチ作成
+git checkout main && git pull origin main
+git checkout -b feature/機能名
+
+# 2. 実装・コミット
+git add -A && git commit -m "feat: 機能の説明"
+
+# 3. プッシュ・PR作成
+git push -u origin HEAD
+gh pr create --title "タイトル" --body "説明"
+
+# 4. CIが通ったらマージ
+gh pr merge --squash --delete-branch
+```
+
+ブランチ命名: `feature/`, `fix/`, `refactor/`, `docs/`, `chore/`
+
+CI (GitHub Actions): PRで自動実行
+- Frontend: lint, type check, build
+- Backend: ruff, black
+
 ## Production Deployment (Railway)
 - Frontend: `keen-abundance-production.up.railway.app`
 - Backend: `mens-esthe-map-production.up.railway.app`
