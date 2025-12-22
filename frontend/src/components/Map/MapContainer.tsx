@@ -26,10 +26,12 @@ export function MapContainer() {
     }
   }, [map, setMapReady]);
 
-  // 初回データ取得（全店舗を取得）
+  // 初回データ取得（SSRで取得済みの場合はスキップ）
   useEffect(() => {
-    fetchShops({ per_page: 500 });
-  }, [fetchShops]);
+    if (shops.length === 0) {
+      fetchShops({ per_page: 500 });
+    }
+  }, [fetchShops, shops.length]);
 
   // ストアの center/zoom が変更された時にマップを移動（プログラム的な移動の場合のみ）
   useEffect(() => {

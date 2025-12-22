@@ -31,6 +31,7 @@ interface ShopState {
 
   fetchShopById: (shopId: string) => Promise<void>;
   selectShop: (shop: Shop | null) => void;
+  setShops: (shops: Shop[]) => void;
   clearError: () => void;
 }
 
@@ -89,6 +90,11 @@ export const useShopStore = create<ShopState>((set) => ({
   // 店舗を選択
   selectShop: (shop) => {
     set({ selectedShop: shop });
+  },
+
+  // 店舗一覧を直接設定（SSR用）
+  setShops: (shops) => {
+    set({ shops, isLoading: false });
   },
 
   // エラーをクリア

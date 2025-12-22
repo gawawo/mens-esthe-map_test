@@ -1,64 +1,30 @@
-'use client';
+import { ClientPage } from '@/components/ClientPage';
+import type { Shop } from '@/types';
 
-import { useCallback } from 'react';
-import { APIProvider } from '@vis.gl/react-google-maps';
-import { MapContainer } from '@/components/Map/MapContainer';
-import { MapSearchBar } from '@/components/Map/MapSearchBar';
-import { MapFilterChips } from '@/components/Map/MapFilterChips';
-import { ShopCarousel, ShopCarouselToggle } from '@/components/Map/ShopCarousel';
-import { ShopDetailPanel } from '@/components/Shop/ShopDetailPanel';
-import { AreaRanking } from '@/components/Ranking/AreaRanking';
-import { DetailedFilterPanel } from '@/components/Filter/DetailedFilterPanel';
-import { useShopStore } from '@/stores/shopStore';
-import { useMapStore } from '@/stores/mapStore';
+// サーバー側でバックエンドAPIを直接呼び出し
+async function getInitialShops(): Promise<Shop[]> {
+  const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8000';
 
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  try {
+    const res = await fetch(`${backendUrl}/api/v1/shops?per_page=500`, {
+      next: { revalidate: 60 }, // 60秒キャッシュ
+    });
 
-export default function Home() {
-  const { fetchShopById } = useShopStore();
-  const { setDetailPanelOpen } = useMapStore();
+    if (!res.ok) {
+      console.error('Failed to fetch initial shops:', res.status);
+      return [];
+    }
 
-  const handleShopSelect = useCallback(async (shopId: string) => {
-    await fetchShopById(shopId);
-    setDetailPanelOpen(true);
-  }, [fetchShopById, setDetailPanelOpen]);
+    const data = await res.json();
+    return data.shops || [];
+  } catch (error) {
+    console.error('Error fetching initial shops:', error);
+    return [];
+  }
+}
 
-  return (
-    <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
-      <main className="relative h-screen w-screen bg-casino-black overflow-hidden">
-        {/* 地図（フルスクリーン） */}
-        <div className="absolute inset-0">
-          <MapContainer />
-        </div>
+export default async function Home() {
+  const initialShops = await getInitialShops();
 
-        {/* マップオーバーレイグラデーション（下部） */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none z-10"
-          style={{
-            background: 'linear-gradient(to top, rgba(10, 10, 15, 0.5), transparent)',
-          }}
-        />
-
-        {/* 検索バー（上部中央） */}
-        <MapSearchBar />
-
-        {/* フィルターチップ（左上） */}
-        <MapFilterChips />
-
-        {/* 店舗カルーセル（下部中央） */}
-        <ShopCarousel onShopSelect={handleShopSelect} />
-        <ShopCarouselToggle />
-
-        {/* 店舗詳細パネル（右側スライドイン） */}
-        <ShopDetailPanel />
-
-        {/* 詳細フィルターパネル（右上） */}
-        <DetailedFilterPanel />
-
-        {/* エリアランキング（左上・フィルターチップの下） */}
-        <AreaRanking onShopSelect={handleShopSelect} />
-
-      </main>
-    </APIProvider>
-  );
+  return <ClientPage initialShops={initialShops} />;
 }
